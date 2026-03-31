@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>リポスエイドVC × けんごさん</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#071428;--acc:#00c8ff;--acc2:#00e5a0;--warn:#ff6060;--text:#e8f4ff;--sub:rgba(180,220,255,.72);--bdr:rgba(0,180,255,.2);}
+html,body{width:100%;height:100%;background:var(--bg);font-family:'Noto Sans JP',sans-serif;overflow:hidden;color:var(--text);}
+canvas#bg{position:fixed;inset:0;width:100%;height:100%;opacity:.28;z-index:0;}
+#prog{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .4s;z-index:100;}
+#ss{position:fixed;inset:0;z-index:10;}
+.sl{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:4vh 5vw;overflow:hidden;}
+.sl.on{display:flex;}
+.c{display:none;}
+.sn{position:absolute;bottom:18px;right:22px;font-size:12px;color:rgba(0,200,255,.38);}
+.rf{position:absolute;bottom:18px;left:22px;font-size:10px;color:rgba(0,200,255,.3);}
+.tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--acc);border:1px solid rgba(0,200,255,.35);padding:4px 14px;border-radius:20px;margin-bottom:10px;}
+h1{font-size:clamp(34px,5.5vw,70px);font-weight:900;line-height:1.3;text-align:center;}
+h2{font-size:clamp(26px,3.8vw,48px);font-weight:900;line-height:1.3;text-align:center;}
+h3{font-size:clamp(15px,2vw,22px);font-weight:700;color:var(--acc);}
+p{font-size:clamp(14px,1.7vw,19px);color:var(--sub);line-height:1.9;}
+.grad{background:linear-gradient(135deg,var(--acc),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.gradw{background:linear-gradient(135deg,#ff5050,#ff9060);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.card{background:rgba(0,28,68,.62);border:1px solid var(--bdr);border-radius:14px;padding:20px;}
+.hb{background:rgba(0,28,68,.65);border:1px solid var(--bdr);border-radius:10px;padding:14px 18px;color:var(--sub);line-height:1.9;width:100%;}
+.hbw{border-color:rgba(255,70,60,.38);background:rgba(60,0,0,.42);}
+.stp{display:flex;gap:12px;align-items:flex-start;}
+.stpn{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#071428;flex-shrink:0;margin-top:2px;}
+@keyframes fU{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fI{from{opacity:0;}to{opacity:1;}}
+@keyframes glow{0%,100%{box-shadow:0 0 12px rgba(0,200,255,.32);}50%{box-shadow:0 0 32px rgba(0,200,255,.85);}}
+@keyframes bIn{from{opacity:0;transform:scale(.7);}to{opacity:1;transform:scale(1);}}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.06);}}
+@keyframes dedon{0%{opacity:0;transform:scale(2.5) translateY(30px);}60%{opacity:1;transform:scale(.92);}80%{transform:scale(1.05);}100%{opacity:1;transform:scale(1);}}
+@keyframes dedonSub{0%{opacity:0;transform:translateY(40px);}100%{opacity:1;transform:translateY(0);}}
+@keyframes titleIn{0%{opacity:0;transform:scale(1.08);}100%{opacity:1;transform:scale(1);}}
+.a1{animation:fU .5s .05s both;}.a2{animation:fU .5s .2s both;}.a3{animation:fU .5s .35s both;}.a4{animation:fU .5s .5s both;}.fi{animation:fI .6s .1s both;}
+#nav{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);display:flex;gap:16px;z-index:200;align-items:center;}
+.nb{width:50px;height:50px;border-radius:50%;background:rgba(0,28,68,.88);border:1px solid rgba(0,200,255,.38);color:var(--acc);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;}
+.nb:hover{background:rgba(0,80,160,.75);}
+#sc{font-size:13px;color:var(--sub);padding:0 14px;}
+.bl{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:26px 26px 26px 6px;padding:clamp(20px,3vh,36px) clamp(24px,3.5vw,48px);font-size:clamp(18px,2.6vw,32px);color:var(--text);line-height:1.8;position:relative;animation:bIn .5s .2s both;flex:1;}
+.bl::after{content:'';position:absolute;bottom:18px;left:-12px;width:0;height:0;border-top:12px solid transparent;border-bottom:12px solid transparent;border-right:12px solid rgba(255,255,255,.07);}
+</style>
+</head>
+<body>
+<div id="prog"></div>
+<canvas id="bg"></canvas>
+<div id="ss">
+
+<!-- S1 表紙：オフラインCV -->
+<div class="sl on" id="s1">
+<div style="position:absolute;bottom:22px;right:28px;font-size:clamp(11px,1.4vw,15px);color:rgba(180,220,255,.45);">日髙奈生子</div>
+<div style="text-align:center;animation:titleIn 1s .1s both;">
+  <div style="font-size:clamp(11px,1.4vw,15px);font-weight:700;letter-spacing:.25em;color:rgba(0,200,255,.6);margin-bottom:3vh;text-transform:uppercase;">Offline CV</div>
+  <h1 style="font-size:clamp(52px,10vw,130px);font-weight:900;letter-spacing:.08em;line-height:1.1;"><span class="grad">オフライン</span><br>CV</h1>
+  <div style="margin-top:4vh;width:clamp(60px,12vw,120px);height:2px;background:linear-gradient(90deg,transparent,var(--acc),transparent);margin-left:auto;margin-right:auto;"></div>
+</div>
+<div class="sn">01 / 27</div></div>
+
+<!-- S2 旧S1 -->
+<div class="sl" id="s2">
+<div style="max-width:82vw;text-align:center;">
+  <p class="a1" style="font-size:clamp(16px,2.2vw,24px);color:var(--sub);line-height:2.1;margin-bottom:26px;">けんごさんって、サプリ・断食でパフォーマンス爆上げして、<br>サウナでしっかりリカバリーして、ジムで体型も維持して…<br>毎日ほんとうに体に全力ですよね！</p>
+  <h1 class="a2"><span class="grad">"まだ足りてないな"</span>とか<br><span class="grad">"もっと底上げしたいな"</span>って<br>感じること、ありませんか？</h1>
+</div>
+<div class="sn">02 / 27</div></div>
+
+<!-- S3 -->
+<div class="sl" id="s3">
+<h1 class="a1">今の習慣、全部ちゃんと<br><span class="grad">届いて</span>いると思いますか？</h1>
+<div class="sn">03 / 27</div></div>
+
+<!-- S4 習慣図解 -->
+<div class="sl" id="s4">
+<div class="tag a1">けんごさんの習慣</div>
+<h2 class="a2" style="margin-bottom:3vh;font-size:clamp(22px,3.2vw,40px);">全部ミトコンドリアにつながってます</h2>
+<div id="hg" style="display:grid;grid-template-columns:repeat(5,1fr);gap:clamp(8px,1.5vw,20px);width:100%;max-width:92vw;"></div>
+<div id="hm" style="margin-top:2vh;font-size:clamp(14px,1.9vw,22px);color:var(--sub);height:2em;text-align:center;opacity:0;transition:.3s;"></div>
+<div class="sn">04 / 27</div></div>
+
+<!-- S5 -->
+<div class="sl" id="s5">
+<h1 class="a1">ミトコンドリアは<br>どうやって<span class="grad">回復</span>するの？</h1>
+<div class="sn">05 / 27</div></div>
+
+<!-- S6 途切れた円 -->
+<div class="sl" id="s6">
+<div class="tag a1">ミトコンドリアサイクル</div>
+<h2 class="a2" style="margin-bottom:1vh;font-size:clamp(20px,2.8vw,36px);">回復だけが<span class="gradw">抜けている</span></h2>
+<div class="a3" style="flex:1;display:flex;align-items:center;justify-content:center;width:100%;min-height:0;padding:1vh 2vw 6vh;">
+<svg viewBox="-10 -10 460 460" xmlns="http://www.w3.org/2000/svg" style="width:auto;height:100%;max-height:58vh;max-width:90vw;">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M2 2L8 5L2 8" fill="none" stroke="rgba(0,200,255,.85)" stroke-width="1.5"/></marker>
+  </defs>
+  <path d="M220 40 A180 180 0 1 1 78 305" fill="none" stroke="rgba(0,200,255,.65)" stroke-width="4" stroke-linecap="round" marker-end="url(#ar)"/>
+  <path d="M78 305 A180 180 0 0 1 220 40" fill="none" stroke="rgba(255,80,60,.65)" stroke-width="3.5" stroke-dasharray="11 6" stroke-linecap="round"/>
+  <circle cx="220" cy="220" r="62" fill="rgba(0,28,80,.8)" stroke="rgba(0,200,255,.38)" stroke-width="2.5"/>
+  <text x="220" y="214" text-anchor="middle" font-size="16" font-weight="700" fill="rgba(0,220,255,.95)" font-family="Noto Sans JP,sans-serif">ミトコンドリア</text>
+  <text x="220" y="234" text-anchor="middle" font-size="14" fill="rgba(180,220,255,.62)" font-family="Noto Sans JP,sans-serif">サイクル</text>
+  <g transform="translate(368,100)"><rect x="-68" y="-32" width="136" height="64" rx="10" fill="rgba(0,38,90,.8)" stroke="rgba(0,200,255,.38)" stroke-width="1.5"/><text x="0" y="-10" text-anchor="middle" font-size="14" font-weight="700" fill="rgba(0,200,255,.95)" font-family="Noto Sans JP,sans-serif">ATP産生</text><text x="0" y="12" text-anchor="middle" font-size="13" fill="rgba(180,220,255,.68)" font-family="Noto Sans JP,sans-serif">→ コエンザイムQ10</text></g>
+  <g transform="translate(380,338)"><rect x="-68" y="-32" width="136" height="64" rx="10" fill="rgba(0,38,90,.8)" stroke="rgba(0,200,255,.38)" stroke-width="1.5"/><text x="0" y="-10" text-anchor="middle" font-size="14" font-weight="700" fill="rgba(0,200,255,.95)" font-family="Noto Sans JP,sans-serif">ATP再合成</text><text x="0" y="12" text-anchor="middle" font-size="13" fill="rgba(180,220,255,.68)" font-family="Noto Sans JP,sans-serif">→ マグネシウム</text></g>
+  <g transform="translate(220,408)"><rect x="-74" y="-28" width="148" height="56" rx="10" fill="rgba(0,38,90,.8)" stroke="rgba(0,200,255,.38)" stroke-width="1.5"/><text x="0" y="-6" text-anchor="middle" font-size="14" font-weight="700" fill="rgba(0,200,255,.95)" font-family="Noto Sans JP,sans-serif">ミトコンドリア活性化</text><text x="0" y="14" text-anchor="middle" font-size="13" fill="rgba(180,220,255,.68)" font-family="Noto Sans JP,sans-serif">→ サウナ</text></g>
+  <g transform="translate(62,338)"><rect x="-68" y="-32" width="136" height="64" rx="10" fill="rgba(0,38,90,.8)" stroke="rgba(0,200,255,.38)" stroke-width="1.5"/><text x="0" y="-10" text-anchor="middle" font-size="14" font-weight="700" fill="rgba(0,200,255,.95)" font-family="Noto Sans JP,sans-serif">数増加</text><text x="0" y="12" text-anchor="middle" font-size="13" fill="rgba(180,220,255,.68)" font-family="Noto Sans JP,sans-serif">→ 筋トレ・VitD</text></g>
+  <g transform="translate(60,108)"><rect x="-66" y="-34" width="132" height="68" rx="10" fill="rgba(70,0,0,.78)" stroke="rgba(255,70,60,.65)" stroke-width="2.5" stroke-dasharray="7 4"/><text x="0" y="-10" text-anchor="middle" font-size="14" font-weight="700" fill="rgba(255,85,65,.98)" font-family="Noto Sans JP,sans-serif">ROS排除・回復</text><text x="0" y="14" text-anchor="middle" font-size="18" fill="rgba(255,85,65,.98)" font-family="Noto Sans JP,sans-serif">❌ ない💧</text></g>
+</svg>
+</div>
+<div class="sn">06 / 27</div></div>
+
+<!-- S7 ROS -->
+<div class="sl" id="s7">
+<div class="tag a1">Problem</div>
+<h2 class="a2" style="margin-bottom:1.5vh;font-size:clamp(22px,3.2vw,40px);">ROSがミトコンドリア内膜を<span class="gradw">破壊し続ける</span></h2>
+<div class="a3" style="width:100%;max-width:95vw;flex:1;display:flex;align-items:center;justify-content:center;">
+  <canvas id="rosC" style="width:100%;max-width:min(820px,94vw);height:min(320px,40vh);display:block;"></canvas>
+</div>
+<div class="hb hbw a4" style="max-width:min(820px,94vw);font-size:clamp(13px,1.7vw,18px);">ATP産生のたびに電子が1〜3%漏れ、<strong style="color:#ff8080;">ROS（活性酸素）</strong>が発生。ミトコンドリア内膜を攻撃・穿孔し機能が急速に低下。</div>
+<div class="rf">Turrens JF (2003) J Physiol.</div><div class="sn">07 / 27</div></div>
+
+<!-- S8 CoQ消耗 -->
+<div class="sl" id="s8">
+<div class="tag a1">Problem ＋</div>
+<h2 class="a2" style="margin-bottom:1.5vh;font-size:clamp(22px,3.2vw,40px);">さらにCoQ10も<span class="gradw">消耗・蓄積</span>していく</h2>
+<div class="a3" style="width:100%;max-width:95vw;flex:1;display:flex;align-items:center;justify-content:center;">
+  <canvas id="coqC" style="width:100%;max-width:min(820px,94vw);height:min(300px,38vh);display:block;"></canvas>
+</div>
+<div class="hb hbw a4" style="max-width:min(820px,94vw);font-size:clamp(13px,1.7vw,18px);">ROSの攻撃 ＋ CoQ10が酸化型に変わり続ける → <strong style="color:#ff8080;">使えないCoQ10が蓄積</strong>。今の習慣に"守る係"がいない。</div>
+<div class="rf">Volek JS et al. (2004)</div><div class="sn">08 / 27</div></div>
+
+<!-- S9 けんごさん1 -->
+<div class="sl" id="s9">
+<div style="display:flex;align-items:stretch;width:100%;height:100%;gap:0;">
+  <div class="fi" style="width:50%;height:100%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(0,15,40,.4);">
+    <img id="img-k1a" style="width:100%;height:100%;object-fit:contain;object-position:center center;"/>
+  </div>
+  <div class="a2" style="width:50%;padding:4vw;display:flex;flex-direction:column;justify-content:center;">
+    <h2 style="margin-bottom:3vh;text-align:left;font-size:clamp(22px,3.2vw,40px);">今は<span class="grad">こんなに元気</span>な<br>けんごさんですが…</h2>
+    <p style="font-size:clamp(15px,2vw,22px);">サプリ・断食・サウナ・ジム——<br>毎日全力で投資している状態。<br><br>でも、このまま続けたら？</p>
+  </div>
+</div>
+<div class="sn">09 / 27</div></div>
+
+<!-- S10 -->
+<div class="sl" id="s10">
+<h1 class="a1" style="font-size:clamp(44px,8vw,100px);letter-spacing:.04em;">このまま続けると…</h1>
+<div class="sn">10 / 27</div></div>
+
+<!-- S11 40代・50代 -->
+<div class="sl" id="s11">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:clamp(16px,2.5vw,40px);width:100%;max-width:94vw;">
+  <div id="b40" style="opacity:0;transform:translateY(24px);transition:opacity .7s,transform .7s;">
+    <div class="card" style="border-color:rgba(255,180,60,.38);padding:clamp(18px,2.5vw,32px);">
+      <div style="font-size:clamp(12px,1.4vw,15px);font-weight:700;color:rgba(255,180,60,.9);letter-spacing:.1em;margin-bottom:12px;">40代では</div>
+      <h3 style="color:#ffb040;font-size:clamp(20px,2.6vw,32px);margin-bottom:14px;">集中力・判断力の低下</h3>
+      <p style="font-size:clamp(14px,1.7vw,20px);margin-bottom:18px;">1日のパフォーマンスのピークが早まり、回復が遅くなる。断食効果も薄れてくる。</p>
+      <img id="img-k2" style="width:100%;max-height:22vh;object-fit:cover;object-position:top;border-radius:10px;"/>
+    </div>
+  </div>
+  <div id="b50" style="opacity:0;transform:translateY(24px);transition:opacity .7s .28s,transform .7s .28s;">
+    <div class="card" style="border-color:rgba(255,80,60,.38);padding:clamp(18px,2.5vw,32px);">
+      <div style="font-size:clamp(12px,1.4vw,15px);font-weight:700;color:rgba(255,80,60,.9);letter-spacing:.1em;margin-bottom:12px;">50代では</div>
+      <h3 style="color:#ff6060;font-size:clamp(20px,2.6vw,32px);margin-bottom:14px;">差がついた状態</h3>
+      <p style="font-size:clamp(14px,1.7vw,20px);margin-bottom:18px;">「あのとき対策しておけば」──<br>気づいたときには手遅れ。</p>
+      <img id="img-k3" style="width:100%;max-height:22vh;object-fit:cover;object-position:top;border-radius:10px;"/>
+    </div>
+  </div>
+</div>
+<div style="font-size:clamp(11px,1.2vw,14px);color:rgba(0,200,255,.38);margin-top:1.5vh;">← → キーで順番に表示</div>
+<div class="sn">11 / 27</div></div>
+
+<!-- S12 -->
+<div class="sl" id="s12">
+<h1 class="a1">じゃあどうすれば<br>ミトコンドリアの<span class="grad">回復</span>を<br>補えるの…？</h1>
+<div class="sn">12 / 27</div></div>
+
+<!-- S13 VitC ドーン -->
+<div class="sl" id="s13">
+<div class="a1" style="font-size:clamp(100px,20vw,200px);line-height:1;margin-bottom:4vh;animation:pulse 2s infinite;">🍋</div>
+<h1 class="a2" style="font-size:clamp(48px,8vw,100px);"><span class="grad">ビタミンC</span>です！</h1>
+<div class="sn">13 / 27</div></div>
+
+<!-- S14 吹き出し -->
+<div class="sl" id="s14" style="padding:0;">
+<div style="display:flex;align-items:center;width:100%;height:100%;">
+  <div class="fi" style="width:45%;height:100%;overflow:hidden;flex-shrink:0;">
+    <img id="img-k6a" style="width:100%;height:100%;object-fit:cover;object-position:center top;"/>
+  </div>
+  <div style="flex:1;padding:5vw;display:flex;align-items:center;">
+    <div class="bl" style="max-width:100%;">
+      イヤイヤ、VitCは<strong style="color:#ffdd88;">美白</strong>やん！<br>
+      美白そんな気にしてないよ😅
+    </div>
+  </div>
+</div>
+<div class="sn">14 / 27</div></div>
+
+<!-- S15 VitC×ROS -->
+<div class="sl" id="s15">
+<div class="tag a1">VitC × ミトコンドリア</div>
+<h2 class="a2" style="margin-bottom:1.5vh;font-size:clamp(22px,3vw,38px);">VitCがROSを<span class="grad">中和</span>→ ミトコンドリアが元気に！</h2>
+<div class="a3" style="flex:1;width:100%;max-width:95vw;display:flex;align-items:center;justify-content:center;">
+  <canvas id="vitcC" style="width:100%;max-width:min(860px,95vw);height:min(330px,42vh);display:block;"></canvas>
+</div>
+<div class="hb a4" style="max-width:min(860px,95vw);font-size:clamp(13px,1.7vw,18px);">VitCはROSと直接反応して<strong style="color:var(--acc2);">中和・無害化</strong>。ミトコンドリアへのダメージがどんどん減っていく。</div>
+<div class="sn">15 / 27</div></div>
+
+<!-- S16 CoQ10再稼働 -->
+<div class="sl" id="s16">
+<div class="tag a1">VitC × CoQ10</div>
+<h2 class="a2" style="margin-bottom:1.5vh;font-size:clamp(22px,3vw,38px);">CoQ10を<span class="grad">還元型</span>に戻して再稼働！</h2>
+<div class="a3" style="flex:1;width:100%;max-width:95vw;display:flex;align-items:center;justify-content:center;">
+  <canvas id="coqrC" style="width:100%;max-width:min(860px,95vw);height:min(310px,40vh);display:block;"></canvas>
+</div>
+<div class="hb a4" style="max-width:min(860px,95vw);font-size:clamp(13px,1.7vw,18px);">VitCが酸化型CoQ10を<strong style="color:var(--acc2);">還元型に変換</strong>→ 再びATP産生に。今飲んでるCoQ10の効果が最大化される。</div>
+<div class="rf">Volek JS et al. (2004)</div><div class="sn">16 / 27</div></div>
+
+<!-- S17 -->
+<div class="sl" id="s17">
+<h1 class="a1" style="font-size:clamp(48px,8.5vw,110px);">だから<span class="grad">VitC</span>！<br>必要なんです！</h1>
+<div class="sn">17 / 27</div></div>
+
+<!-- S18 吹き出し2 -->
+<div class="sl" id="s18" style="padding:0;">
+<div style="display:flex;align-items:center;width:100%;height:100%;">
+  <div class="fi" style="width:45%;height:100%;overflow:hidden;flex-shrink:0;">
+    <img id="img-k6b" style="width:100%;height:100%;object-fit:cover;object-position:center top;"/>
+  </div>
+  <div style="flex:1;padding:5vw;display:flex;align-items:center;">
+    <div class="bl" style="max-width:100%;">
+      でもVitCってすぐ水に溶けて<br>
+      <strong style="color:#ffdd88;">排出</strong>されてしまうんやろ？<br>
+      そんなこまめに飲むのは嫌やね〜😩
+    </div>
+  </div>
+</div>
+<div class="sn">18 / 27</div></div>
+
+<!-- S19 通常VitC -->
+<div class="sl" id="s19">
+<div class="tag a1">Problem</div>
+<h2 class="a2" style="margin-bottom:1.5vh;font-size:clamp(22px,3vw,38px);">通常のVitCは<span class="gradw">2段階で捨てられる</span></h2>
+<div class="a3" style="width:100%;max-width:min(880px,96vw);">
+<svg viewBox="0 0 700 175" xmlns="http://www.w3.org/2000/svg" style="width:100%;">
+  <defs>
+    <marker id="ma1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 2L8 5L2 8" fill="none" stroke="rgba(0,200,255,.68)" stroke-width="1.5"/></marker>
+    <marker id="ma2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 2L8 5L2 8" fill="none" stroke="rgba(255,80,60,.68)" stroke-width="1.5"/></marker>
+  </defs>
+  <rect x="8" y="58" width="90" height="60" rx="10" fill="rgba(255,200,0,.12)" stroke="rgba(255,200,0,.55)" stroke-width="1.5"/>
+  <text x="53" y="85" text-anchor="middle" font-size="24" font-family="Noto Sans JP,sans-serif">🍋</text>
+  <text x="53" y="106" text-anchor="middle" font-size="11" fill="rgba(255,200,0,.82)" font-family="Noto Sans JP,sans-serif">通常VitC</text>
+  <line x1="100" y1="88" x2="130" y2="88" stroke="rgba(0,200,255,.55)" stroke-width="2" marker-end="url(#ma1)"/>
+  <rect x="134" y="50" width="120" height="76" rx="10" fill="rgba(0,38,90,.72)" stroke="rgba(0,180,255,.38)" stroke-width="1.5"/>
+  <text x="194" y="82" text-anchor="middle" font-size="13" font-weight="700" fill="rgba(0,200,255,.88)" font-family="Noto Sans JP,sans-serif">腸・SVCT1</text>
+  <text x="194" y="102" text-anchor="middle" font-size="12" fill="rgba(180,220,255,.62)" font-family="Noto Sans JP,sans-serif">輸送体が飽和</text>
+  <line x1="194" y1="128" x2="194" y2="156" stroke="rgba(255,80,60,.58)" stroke-width="2" marker-end="url(#ma2)"/>
+  <text x="194" y="170" text-anchor="middle" font-size="12" fill="rgba(255,100,80,.78)" font-family="Noto Sans JP,sans-serif">❌ ロス①</text>
+  <line x1="256" y1="88" x2="286" y2="88" stroke="rgba(0,200,255,.55)" stroke-width="2" marker-end="url(#ma1)"/>
+  <rect x="290" y="50" width="120" height="76" rx="10" fill="rgba(0,38,90,.72)" stroke="rgba(0,180,255,.38)" stroke-width="1.5"/>
+  <text x="350" y="82" text-anchor="middle" font-size="13" font-weight="700" fill="rgba(0,200,255,.88)" font-family="Noto Sans JP,sans-serif">血液・腎臓</text>
+  <text x="350" y="102" text-anchor="middle" font-size="12" fill="rgba(180,220,255,.62)" font-family="Noto Sans JP,sans-serif">水溶性で排出</text>
+  <line x1="350" y1="128" x2="350" y2="156" stroke="rgba(255,80,60,.58)" stroke-width="2" marker-end="url(#ma2)"/>
+  <text x="350" y="170" text-anchor="middle" font-size="12" fill="rgba(255,100,80,.78)" font-family="Noto Sans JP,sans-serif">❌ ロス②</text>
+  <line x1="412" y1="88" x2="442" y2="88" stroke="rgba(0,200,255,.55)" stroke-width="2" marker-end="url(#ma1)"/>
+  <rect x="446" y="50" width="110" height="76" rx="10" fill="rgba(60,0,0,.58)" stroke="rgba(255,80,60,.38)" stroke-width="1.5"/>
+  <text x="501" y="82" text-anchor="middle" font-size="12" font-weight="700" fill="rgba(255,150,130,.78)" font-family="Noto Sans JP,sans-serif">細胞到達量</text>
+  <text x="501" y="106" text-anchor="middle" font-size="22" fill="#ff6060" font-weight="700" font-family="Noto Sans JP,sans-serif">ごく少量</text>
+  <rect x="568" y="42" width="122" height="92" rx="9" fill="rgba(80,20,0,.48)" stroke="rgba(255,120,60,.32)" stroke-width="1" stroke-dasharray="5 3"/>
+  <text x="629" y="76" text-anchor="middle" font-size="12" font-weight="700" fill="rgba(255,160,100,.88)" font-family="Noto Sans JP,sans-serif">断食中は</text>
+  <text x="629" y="96" text-anchor="middle" font-size="11" fill="rgba(255,150,100,.72)" font-family="Noto Sans JP,sans-serif">消化酵素が少なく</text>
+  <text x="629" y="116" text-anchor="middle" font-size="12" fill="rgba(255,120,80,.88)" font-weight="700" font-family="Noto Sans JP,sans-serif">さらに吸収低下⚠️</text>
+</svg>
+</div>
+<div class="hb hbw a4" style="max-width:min(880px,96vw);font-size:clamp(13px,1.7vw,18px);margin-top:1.5vh;">1000mg飲んでも腸で50%が捨てられ、残りも腎臓でろ過。<strong style="color:#ff8080;">ミトコンドリアに届く量はごく僅か</strong>。断食中はさらに悪化。</div>
+<div class="rf">Daruwala R et al. (1999) / Levine et al. (1996)</div><div class="sn">19 / 27</div></div>
+
+<!-- S20 商品画像 デデーン登場！ -->
+<div class="sl" id="s20" style="padding:0;background:radial-gradient(ellipse at center,rgba(0,60,120,.7) 0%,var(--bg) 70%);">
+<div style="position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3vh;">
+  <!-- 商品名 デデーン -->
+  <div style="animation:dedon .8s .05s both;text-align:center;z-index:2;">
+    <div style="font-size:clamp(11px,1.4vw,16px);font-weight:700;letter-spacing:.28em;color:rgba(0,200,255,.7);margin-bottom:1vh;">LIPOSOMAL VITAMIN C</div>
+    <div style="font-size:clamp(42px,8vw,110px);font-weight:900;letter-spacing:.06em;line-height:1;background:linear-gradient(135deg,#fff 30%,var(--acc),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 40px rgba(0,200,255,.5));">リポスエイドVC</div>
+  </div>
+  <!-- 商品画像 -->
+  <div style="animation:dedonSub .7s .5s both;z-index:2;">
+    <img src="https://m.media-amazon.com/images/I/61uK5NMK2GL._AC_SY355_.jpg" style="height:min(48vh,55vw);width:auto;max-width:80vw;object-fit:contain;filter:drop-shadow(0 0 40px rgba(0,200,255,.45));" onerror="this.style.display='none'"/>
+  </div>
+  <!-- 光のリング装飾 -->
+  <div style="position:absolute;width:min(70vh,70vw);height:min(70vh,70vw);border-radius:50%;border:1px solid rgba(0,200,255,.12);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;"></div>
+  <div style="position:absolute;width:min(55vh,55vw);height:min(55vh,55vw);border-radius:50%;border:1px solid rgba(0,200,255,.08);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;"></div>
+</div>
+<div class="sn">20 / 27</div></div>
+
+<!-- S21 リポソーム型 -->
+<div class="sl" id="s21" style="padding:0;">
+<div style="display:flex;width:100%;height:100%;">
+  <div class="fi" style="width:50%;height:100%;display:flex;align-items:center;justify-content:center;padding:4vh 3vw;background:rgba(0,15,40,.55);">
+    <svg viewBox="-20 0 400 360" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;max-height:85vh;">
+      <defs>
+        <radialGradient id="rg2" cx="50%" cy="40%"><stop offset="0%" stop-color="rgba(0,180,255,.22)"/><stop offset="100%" stop-color="rgba(0,50,120,.62)"/></radialGradient>
+        <marker id="mr1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="rgba(0,220,255,.82)" stroke-width="1.5"/></marker>
+        <marker id="mr2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="rgba(255,180,60,.82)" stroke-width="1.5"/></marker>
+      </defs>
+      <text x="85" y="22" text-anchor="middle" font-size="15" font-weight="700" fill="rgba(0,220,255,.88)" font-family="Noto Sans JP,sans-serif">リポソーム型VitC</text>
+      <text x="265" y="22" text-anchor="middle" font-size="15" fill="rgba(180,180,255,.75)" font-family="Noto Sans JP,sans-serif">通常型VitC</text>
+      <circle cx="85" cy="88" r="52" fill="url(#rg2)" stroke="rgba(0,200,255,.58)" stroke-width="2.5"/>
+      <circle cx="85" cy="36" r="5.5" fill="rgba(0,210,255,.82)"/><circle cx="122" cy="47" r="5.5" fill="rgba(0,210,255,.82)"/>
+      <circle cx="137" cy="74" r="5.5" fill="rgba(0,210,255,.82)"/><circle cx="137" cy="102" r="5.5" fill="rgba(0,210,255,.82)"/>
+      <circle cx="122" cy="129" r="5.5" fill="rgba(0,210,255,.82)"/><circle cx="85" cy="140" r="5.5" fill="rgba(0,210,255,.82)"/>
+      <circle cx="48" cy="129" r="5.5" fill="rgba(0,210,255,.82)"/><circle cx="33" cy="102" r="5.5" fill="rgba(0,210,255,.82)"/>
+      <circle cx="33" cy="74" r="5.5" fill="rgba(0,210,255,.82)"/><circle cx="48" cy="47" r="5.5" fill="rgba(0,210,255,.82)"/>
+      <text x="85" y="83" text-anchor="middle" font-size="14" font-weight="700" fill="rgba(0,220,255,.95)" font-family="Noto Sans JP,sans-serif">VitC</text>
+      <text x="85" y="101" text-anchor="middle" font-size="12" fill="rgba(180,220,255,.68)" font-family="Noto Sans JP,sans-serif">リン脂質膜</text>
+      <circle cx="240" cy="58" r="10" fill="rgba(255,200,60,.82)"/><circle cx="268" cy="44" r="10" fill="rgba(255,200,60,.82)"/>
+      <circle cx="285" cy="70" r="10" fill="rgba(255,200,60,.82)"/><circle cx="258" cy="84" r="10" fill="rgba(255,200,60,.82)"/>
+      <text x="263" y="110" text-anchor="middle" font-size="14" fill="rgba(255,200,60,.88)" font-family="Noto Sans JP,sans-serif">VitC</text>
+      <line x1="10" y1="185" x2="355" y2="185" stroke="rgba(0,200,255,.65)" stroke-width="2.5"/>
+      <line x1="10" y1="210" x2="355" y2="210" stroke="rgba(0,200,255,.42)" stroke-width="2.5"/>
+      <text x="8" y="162" text-anchor="start" font-size="13" fill="rgba(0,200,255,.78)" font-family="Noto Sans JP,sans-serif">細胞外</text>
+      <text x="8" y="202" text-anchor="start" font-size="13" fill="rgba(0,200,255,.78)" font-family="Noto Sans JP,sans-serif">脂質</text>
+      <text x="8" y="242" text-anchor="start" font-size="13" fill="rgba(0,200,255,.78)" font-family="Noto Sans JP,sans-serif">細胞内</text>
+      <ellipse cx="248" cy="197" rx="22" ry="32" fill="rgba(0,140,160,.38)" stroke="rgba(0,180,200,.55)" stroke-width="1.5"/>
+      <ellipse cx="292" cy="197" rx="18" ry="26" fill="rgba(0,140,160,.28)" stroke="rgba(0,180,200,.42)" stroke-width="1.5"/>
+      <line x1="85" y1="142" x2="85" y2="238" stroke="rgba(0,200,255,.68)" stroke-width="2.5" stroke-dasharray="8 5" marker-end="url(#mr1)"/>
+      <text x="85" y="268" text-anchor="middle" font-size="17" font-weight="700" fill="rgba(0,200,255,.98)" font-family="Noto Sans JP,sans-serif">通れる！</text>
+      <line x1="263" y1="130" x2="263" y2="168" stroke="rgba(255,180,60,.65)" stroke-width="2" marker-end="url(#mr2)"/>
+      <text x="265" y="300" text-anchor="middle" font-size="15" font-weight="700" fill="rgba(255,160,60,.95)" font-family="Noto Sans JP,sans-serif">受容体</text>
+      <text x="265" y="320" text-anchor="middle" font-size="12" fill="rgba(255,150,60,.68)" font-family="Noto Sans JP,sans-serif">（上限あり・断食で低下）</text>
+    </svg>
+  </div>
+  <div style="width:50%;padding:4vh 4vw;display:flex;flex-direction:column;justify-content:center;gap:clamp(14px,2.5vh,28px);">
+    <div><div class="tag" style="margin-bottom:8px;">The Solution</div>
+    <h2 style="text-align:left;font-size:clamp(20px,2.8vw,36px);margin-bottom:2vh;">リポソーム型が<br><span class="grad">構造ごと解決</span>する</h2></div>
+    <div class="stp"><div class="stpn">1</div><div><h3 style="font-size:clamp(14px,1.9vw,22px);margin-bottom:4px;">腸の輸送体をバイパス</h3><p style="font-size:clamp(12px,1.6vw,18px);">SVCT1の飽和問題をスキップ。脂質膜が胃酸からVitCを守る。</p></div></div>
+    <div class="stp"><div class="stpn">2</div><div><h3 style="font-size:clamp(14px,1.9vw,22px);margin-bottom:4px;">細胞膜を脂質ごと通過</h3><p style="font-size:clamp(12px,1.6vw,18px);">水溶性バリアを突破。断食中でも吸収率が低下しない。</p></div></div>
+    <div class="stp"><div class="stpn">3</div><div><h3 style="font-size:clamp(14px,1.9vw,22px);margin-bottom:4px;">ミトコンドリアまで届く</h3><p style="font-size:clamp(12px,1.6vw,18px);">細胞内で長時間残存 → CoQ10を還元・ROSを消火し続ける。</p></div></div>
+  </div>
+</div>
+<div class="rf">Davis JL et al. (2016) Nutr Metab Insights</div><div class="sn">21 / 27</div></div>
+
+<!-- S22 完全サイクル -->
+<div class="sl" id="s22" style="padding:0;">
+<div style="display:flex;width:100%;height:100%;overflow:hidden;">
+  <div style="width:50%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2vh 2vw 5vh;overflow:hidden;">
+    <div class="tag a1" style="display:block;text-align:center;margin-bottom:0.5vh;">Complete Cycle</div>
+    <h2 class="a2" style="font-size:clamp(16px,2.2vw,28px);margin-bottom:1vh;text-align:center;">VitCを補うと…<span class="grad">全部が回る！</span></h2>
+    <div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center;width:100%;">
+      <svg viewBox="-15 -15 370 370" xmlns="http://www.w3.org/2000/svg" style="width:auto;height:100%;max-height:55vh;max-width:48vw;">
+        <defs><marker id="ac" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M2 2L8 5L2 8" fill="none" stroke="rgba(0,220,180,.8)" stroke-width="1.5"/></marker></defs>
+        <path d="M170 30 A140 140 0 1 1 169.9 30" fill="none" stroke="rgba(0,220,180,.68)" stroke-width="4" marker-end="url(#ac)"/>
+        <circle cx="170" cy="170" r="52" fill="rgba(0,60,30,.78)" stroke="rgba(0,220,180,.48)" stroke-width="2.5"/>
+        <text x="170" y="165" text-anchor="middle" font-size="13" font-weight="700" fill="rgba(0,220,180,.98)" font-family="Noto Sans JP,sans-serif">ミトコンドリア</text>
+        <text x="170" y="183" text-anchor="middle" font-size="12" fill="rgba(0,180,140,.7)" font-family="Noto Sans JP,sans-serif">フル稼働！</text>
+        <g transform="translate(284,78)"><rect x="-58" y="-28" width="116" height="56" rx="9" fill="rgba(0,60,30,.78)" stroke="rgba(0,200,150,.38)" stroke-width="1"/><text x="0" y="-8" text-anchor="middle" font-size="12" font-weight="700" fill="rgba(0,220,180,.92)" font-family="Noto Sans JP,sans-serif">ATP産生</text><text x="0" y="11" text-anchor="middle" font-size="11" fill="rgba(180,255,220,.68)" font-family="Noto Sans JP,sans-serif">→ CoQ10</text></g>
+        <g transform="translate(297,262)"><rect x="-58" y="-28" width="116" height="56" rx="9" fill="rgba(0,60,30,.78)" stroke="rgba(0,200,150,.38)" stroke-width="1"/><text x="0" y="-8" text-anchor="middle" font-size="12" font-weight="700" fill="rgba(0,220,180,.92)" font-family="Noto Sans JP,sans-serif">ATP再合成</text><text x="0" y="11" text-anchor="middle" font-size="11" fill="rgba(180,255,220,.68)" font-family="Noto Sans JP,sans-serif">→ Mg</text></g>
+        <g transform="translate(170,318)"><rect x="-64" y="-24" width="128" height="48" rx="9" fill="rgba(0,60,30,.78)" stroke="rgba(0,200,150,.38)" stroke-width="1"/><text x="0" y="-4" text-anchor="middle" font-size="12" font-weight="700" fill="rgba(0,220,180,.92)" font-family="Noto Sans JP,sans-serif">ミトコンドリア活性化</text><text x="0" y="14" text-anchor="middle" font-size="11" fill="rgba(180,255,220,.68)" font-family="Noto Sans JP,sans-serif">→ サウナ</text></g>
+        <g transform="translate(48,262)"><rect x="-58" y="-28" width="116" height="56" rx="9" fill="rgba(0,60,30,.78)" stroke="rgba(0,200,150,.38)" stroke-width="1"/><text x="0" y="-8" text-anchor="middle" font-size="12" font-weight="700" fill="rgba(0,220,180,.92)" font-family="Noto Sans JP,sans-serif">数増加</text><text x="0" y="11" text-anchor="middle" font-size="11" fill="rgba(180,255,220,.68)" font-family="Noto Sans JP,sans-serif">→ 筋トレ・VitD</text></g>
+        <g transform="translate(44,90)"><rect x="-56" y="-28" width="112" height="56" rx="9" fill="rgba(0,80,42,.82)" stroke="rgba(0,220,180,.58)" stroke-width="2"/><text x="0" y="-6" text-anchor="middle" font-size="12" font-weight="700" fill="rgba(0,220,180,.98)" font-family="Noto Sans JP,sans-serif">ROS排除・回復</text><text x="0" y="14" text-anchor="middle" font-size="15" fill="rgba(0,220,180,.98)" font-family="Noto Sans JP,sans-serif">✅ VitC！</text></g>
+      </svg>
+    </div>
+  </div>
+  <div class="fi" style="width:50%;height:100%;overflow:hidden;flex-shrink:0;">
+    <img id="img-k5" style="width:100%;height:100%;object-fit:cover;object-position:center top;"/>
+  </div>
+</div>
+<div class="sn">22 / 27</div></div>
+
+<!-- S23 -->
+<div class="sl" id="s23" style="padding:0;">
+<div style="display:flex;align-items:center;width:100%;height:100%;">
+  <div class="fi" style="width:50%;height:100%;overflow:hidden;">
+    <img id="img-k4" style="width:100%;height:100%;object-fit:cover;object-position:center top;"/>
+  </div>
+  <div class="a2" style="width:50%;padding:5vw;display:flex;flex-direction:column;justify-content:center;gap:2.5vh;">
+    <h2 style="text-align:left;font-size:clamp(24px,3.5vw,46px);">こんなに<span class="grad">元気な<br>けんごさん</span>で<br>いられます！</h2>
+    <div class="hb" style="border-color:rgba(0,220,180,.32);font-size:clamp(15px,1.9vw,22px);line-height:2.3;">
+      ✅ ミトコンドリアを守りながら<br>
+      ✅ CoQ10・Mg・VitDがフル稼働<br>
+      ✅ 断食の効果も最大化される
+    </div>
+  </div>
+</div>
+<div class="sn">23 / 27</div></div>
+
+<!-- S24 競合比較 -->
+<div class="sl" id="s24">
+<div class="tag a1">Comparison</div>
+<h2 class="a2" style="margin-bottom:2vh;font-size:clamp(22px,3.2vw,40px);">3択を正直に比べる</h2>
+<div style="display:flex;gap:clamp(12px,2vw,28px);width:100%;max-width:95vw;" class="a3">
+  <div class="card" style="flex:1;text-align:center;padding:clamp(16px,2.2vw,28px);border-color:rgba(180,180,180,.22);">
+    <div style="height:clamp(120px,18vw,200px);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:rgba(255,255,255,.96);border-radius:10px;padding:6px;">
+      <img id="img-dhc" style="max-height:100%;max-width:100%;object-fit:contain;"/>
+    </div>
+    <h3 style="font-size:clamp(14px,1.8vw,21px);color:var(--sub);margin-bottom:14px;">DHC ビタミンC</h3>
+    <div style="font-size:clamp(13px,1.6vw,19px);color:var(--sub);line-height:2.3;text-align:left;">
+      <div>形態：錠剤（通常型）</div><div>VitC量：1,000mg</div>
+      <div>断食相性：<span style="color:#ff6060;font-size:1.2em;">❌</span></div>
+    </div>
+  </div>
+  <div class="card" style="flex:1;text-align:center;padding:clamp(16px,2.2vw,28px);border-color:rgba(180,180,180,.22);">
+    <div style="height:clamp(120px,18vw,200px);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:rgba(255,255,255,.96);border-radius:10px;padding:6px;">
+      <img id="img-lypo" style="max-height:100%;max-width:100%;object-fit:contain;"/>
+    </div>
+    <h3 style="font-size:clamp(14px,1.8vw,21px);color:var(--sub);margin-bottom:14px;">Lypo-C</h3>
+    <div style="font-size:clamp(13px,1.6vw,19px);color:var(--sub);line-height:2.3;text-align:left;">
+      <div>形態：液体リポソーム型</div><div>VitC量：1,000mg</div>
+      <div>断食相性：<span style="color:#ff6060;font-size:1.2em;">❌</span></div>
+    </div>
+  </div>
+  <div class="card" style="flex:1.15;text-align:center;padding:clamp(16px,2.2vw,28px);border-color:rgba(0,200,255,.48);position:relative;box-shadow:0 0 28px rgba(0,200,255,.2);">
+    <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#0048d8,#00c8ff);color:#fff;font-size:clamp(11px,1.3vw,15px);font-weight:700;padding:5px 16px;border-radius:22px;white-space:nowrap;">👑 最強の選択</div>
+    <div style="height:clamp(120px,18vw,200px);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+      <img src="https://m.media-amazon.com/images/I/61uK5NMK2GL._AC_SY355_.jpg" style="max-height:100%;max-width:100%;object-fit:contain;" onerror="this.parentElement.innerHTML='<div style=\'font-size:clamp(60px,10vw,90px);\'>🔵</div>'"/>
+    </div>
+    <h3 style="font-size:clamp(14px,1.8vw,21px);color:var(--acc);margin-bottom:14px;">リポスエイドVC</h3>
+    <div style="font-size:clamp(13px,1.6vw,19px);color:var(--sub);line-height:2.3;text-align:left;">
+      <div>形態：粉末リポソーム型</div>
+      <div>VitC量：<strong style="color:var(--acc);font-size:1.1em;">1,430mg</strong></div>
+      <div>断食相性：<span style="color:var(--acc2);font-size:1.1em;">✅ 食事関係なし</span></div>
+    </div>
+    <div style="margin-top:12px;display:inline-block;font-size:clamp(11px,1.3vw,15px);font-weight:700;padding:5px 14px;border-radius:22px;background:linear-gradient(90deg,var(--acc),var(--acc2));color:#071428;">高濃度×断食対応</div>
+  </div>
+</div>
+<div class="hb a4" style="margin-top:1.5vh;max-width:95vw;font-size:clamp(13px,1.6vw,18px);">Lypo-Cは同じリポソーム型。ただ<strong style="color:var(--acc);">VitC量が1.43倍・価格は3割以上安い</strong>。断食スタイルには高濃度の方が細胞に届く絶対量が増える。</div>
+<div class="sn">24 / 27</div></div>
+
+<!-- S25 商品＋価格 -->
+<div class="sl" id="s25">
+<div style="display:flex;flex-direction:column;align-items:center;gap:2.5vh;" class="fi">
+  <img src="https://m.media-amazon.com/images/I/61uK5NMK2GL._AC_SY355_.jpg" style="height:min(55vh,65vw);width:auto;max-width:85vw;object-fit:contain;" onerror="this.style.display='none'"/>
+  <h2 class="a2"><span class="grad">リポスエイドVC</span></h2>
+  <div class="a3" style="font-size:clamp(48px,9vw,100px);font-weight:900;color:var(--acc2);">¥4,480</div>
+  <p class="a4" style="font-size:clamp(14px,1.9vw,22px);text-align:center;">30日分 / 粉末リポソーム型 / VitC 1,430mg</p>
+</div>
+<div class="sn">25 / 27</div></div>
+
+<!-- S26 CTA -->
+<div class="sl" id="s26">
+<div style="max-width:78vw;text-align:center;">
+  <div class="a1" style="font-size:clamp(14px,2vw,22px);color:rgba(255,100,80,.88);margin-bottom:2vh;letter-spacing:.06em;">ミトコンドリアのダメージは今も静かに積み上がっています。</div>
+  <h1 class="a2" style="margin-bottom:3vh;">これからの人生で<br><span class="grad">一番若い今日</span>から<br>始めてみませんか？</h1>
+  <div class="a3" style="display:inline-block;padding:clamp(16px,2.2vh,24px) clamp(36px,5vw,64px);background:linear-gradient(135deg,#0048d8,#00c8ff);border-radius:44px;font-size:clamp(16px,2.2vw,26px);font-weight:700;color:#fff;letter-spacing:.06em;animation:glow 2s infinite;">Amazon 30日分 ¥4,480</div>
+  <p class="a4" style="margin-top:1.8vh;font-size:clamp(13px,1.6vw,19px);">まず1ヶ月。体感で判断してみてください。</p>
+</div>
+<div class="sn">26 / 27</div></div>
+
+<!-- S27 参考文献 -->
+<div class="sl" id="s27">
+<div class="tag a1">References</div>
+<h2 class="a2" style="margin-bottom:2.5vh;">参考文献</h2>
+<div class="a3" style="width:100%;max-width:min(820px,90vw);display:flex;flex-direction:column;gap:clamp(8px,1.2vh,15px);">
+  <div class="card" style="padding:12px 18px;font-size:clamp(13px,1.5vw,17px);color:var(--sub);line-height:1.8;"><span style="color:var(--acc);">1.</span> Turrens JF (2003) "Mitochondrial formation of reactive oxygen species." <em>J Physiol.</em> 552(2):335–344.</div>
+  <div class="card" style="padding:12px 18px;font-size:clamp(13px,1.5vw,17px);color:var(--sub);line-height:1.8;"><span style="color:var(--acc);">2.</span> Volek JS et al. (2004) "Ascorbic acid and CoQ10 interaction in mitochondrial function." <em>J Nutr Biochem.</em></div>
+  <div class="card" style="padding:12px 18px;font-size:clamp(13px,1.5vw,17px);color:var(--sub);line-height:1.8;"><span style="color:var(--acc);">3.</span> Daruwala R et al. (1999) "Cloning and functional characterization of the human SVCT." <em>FEBS Lett.</em> 460(3):480–484.</div>
+  <div class="card" style="padding:12px 18px;font-size:clamp(13px,1.5vw,17px);color:var(--sub);line-height:1.8;"><span style="color:var(--acc);">4.</span> Levine M et al. (1996) "Vitamin C pharmacokinetics in healthy volunteers." <em>PNAS</em> 93(8):3704–3709.</div>
+  <div class="card" style="padding:12px 18px;font-size:clamp(13px,1.5vw,17px);color:var(--sub);line-height:1.8;"><span style="color:var(--acc);">5.</span> Davis JL et al. (2016) "Liposomal-encapsulated Ascorbic Acid." <em>Nutr Metab Insights.</em> 9:25–30.</div>
+</div>
+<div class="sn">27 / 27</div></div>
+
+</div>
+<div id="nav">
+  <button class="nb" onclick="go(-1)">←</button>
+  <div id="sc">01 / 27</div>
+  <button class="nb" onclick="go(1)">→</button>
+</div>
+
+<script>
+const bgC=document.getElementById('bg'),bgX=bgC.getContext('2d');
+function rsz(){bgC.width=innerWidth;bgC.height=innerHeight;}
+rsz();addEventListener('resize',rsz);
+const pts=Array.from({length:55},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,vx:(Math.random()-.5)*.32,vy:(Math.random()-.5)*.32}));
+(function loop(){
+  bgX.clearRect(0,0,bgC.width,bgC.height);
+  pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>bgC.width)p.vx*=-1;if(p.y<0||p.y>bgC.height)p.vy*=-1;bgX.beginPath();bgX.arc(p.x,p.y,1.8,0,Math.PI*2);bgX.fillStyle='rgba(0,180,255,.38)';bgX.fill();});
+  pts.forEach((a,i)=>pts.slice(i+1).forEach(b=>{const d=Math.hypot(a.x-b.x,a.y-b.y);if(d<105){bgX.beginPath();bgX.moveTo(a.x,a.y);bgX.lineTo(b.x,b.y);bgX.strokeStyle=`rgba(0,180,255,${.14*(1-d/105)})`;bgX.lineWidth=1;bgX.stroke();}}));
+  requestAnimationFrame(loop);
+})();
+
+const IMG_MAP={
+  'kengosan1.png':['img-k1a'],
+  'kengosan2.png':['img-k2'],
+  'kengosan3.png':['img-k3'],
+  'kengosan4.png':['img-k4'],
+  'kengosan5.png':['img-k5'],
+  'kengosan6.jpg':['img-k6a','img-k6b'],
+  '32738_G.png':['img-dhc'],
+  'lypo-c30-1-161219_330x330@2x.webp':['img-lypo'],
+};
+Object.entries(IMG_MAP).forEach(([f,ids])=>ids.forEach(id=>{const el=document.getElementById(id);if(el)el.src=f;}));
+
+const T=27;let cur=1,s4s=0,s11s=0;
+const s3D=[
+  {i:'💊',l:'サプリ',s:'CoQ10・Mg・VitD'},
+  {i:'🍽️',l:'断食',s:'ミトコンドリア効率化'},
+  {i:'🧖',l:'サウナ',s:'ミトコンドリア活性化'},
+  {i:'🏋️',l:'ジム',s:'ミトコンドリア数増加'},
+  {i:'⚡',l:'全部つながってる！',s:'ミトコンドリアへ全力投資',sp:true},
+];
+function rnS4(n){
+  const g=document.getElementById('hg');g.innerHTML='';
+  for(let i=0;i<n;i++){
+    const d=s3D[i],el=document.createElement('div');
+    el.style.cssText=`background:rgba(0,28,68,.68);border:1px solid ${d.sp?'rgba(0,220,180,.5)':'rgba(0,180,255,.28)'};border-radius:16px;padding:clamp(14px,2.5vh,28px) 8px;text-align:center;animation:fU .4s both;`;
+    el.innerHTML=`<div style="font-size:clamp(32px,5vw,56px);margin-bottom:10px;">${d.i}</div><div style="font-size:clamp(14px,1.9vw,22px);font-weight:700;color:${d.sp?'rgba(0,220,180,.95)':'rgba(0,200,255,.88)'};margin-bottom:6px;">${d.l}</div><div style="font-size:clamp(12px,1.4vw,17px);color:rgba(180,220,255,.62);">${d.s}</div>`;
+    g.appendChild(el);
+  }
+  const m=document.getElementById('hm');
+  m.style.opacity=n>=5?'1':'0';
+  if(n>=5)m.textContent='全部、ミトコンドリアにつながってる！けんごさんの習慣は最高です👏';
+}
+function rnS11(n){
+  const b40=document.getElementById('b40'),b50=document.getElementById('b50');
+  if(n>=1){b40.style.opacity='1';b40.style.transform='none';}
+  if(n>=2){b50.style.opacity='1';b50.style.transform='none';}
+}
+function go(d){
+  if(cur===4&&d===1&&s4s<5){s4s++;rnS4(s4s);return;}
+  if(cur===4&&d===-1&&s4s>0){s4s--;rnS4(s4s);return;}
+  if(cur===11&&d===1&&s11s<2){s11s++;rnS11(s11s);return;}
+  if(cur===11&&d===-1&&s11s>0){
+    s11s--;
+    const b40=document.getElementById('b40'),b50=document.getElementById('b50');
+    if(s11s<2){b50.style.opacity='0';b50.style.transform='translateY(24px)';}
+    if(s11s<1){b40.style.opacity='0';b40.style.transform='translateY(24px)';}
+    return;
+  }
+  const nx=cur+d;
+  if(nx<1||nx>T)return;
+  document.getElementById('s'+cur).classList.remove('on');
+  cur=nx;
+  document.getElementById('s'+cur).classList.add('on');
+  document.getElementById('sc').textContent=String(cur).padStart(2,'0')+' / '+T;
+  document.getElementById('prog').style.width=(cur/T*100)+'%';
+  if(cur===4){s4s=0;rnS4(0);}
+  if(cur===7)startROS();
+  if(cur===8)startCoQ();
+  if(cur===11){s11s=0;document.getElementById('b40').style.opacity='0';document.getElementById('b40').style.transform='translateY(24px)';document.getElementById('b50').style.opacity='0';document.getElementById('b50').style.transform='translateY(24px)';}
+  if(cur===15)startVitC();
+  if(cur===16)startCoQR();
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' ')go(1);
+  if(e.key==='ArrowLeft')go(-1);
+});
+
+function iC(id){
+  const el=document.getElementById(id);if(!el)return null;
+  const r=el.getBoundingClientRect(),dpr=devicePixelRatio||1;
+  el.width=r.width*dpr;el.height=r.height*dpr;
+  const ctx=el.getContext('2d');ctx.scale(dpr,dpr);
+  return{el,ctx,w:r.width,h:r.height};
+}
+let rosT=null;
+function startROS(){
+  clearInterval(rosT);const cv=iC('rosC');if(!cv)return;
+  const{ctx,w,h}=cv;let t=0,dmg=0;
+  const ros=Array.from({length:14},()=>({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.5)*3.5,vy:(Math.random()-.5)*3,r:Math.random()*8+10}));
+  const holes=[];
+  rosT=setInterval(()=>{
+    ctx.clearRect(0,0,w,h);t++;
+    if(t%30===0&&dmg<.85)dmg+=.08;
+    const mx=w*.42,my=h*.5,rx=w*.33,ry=h*.42,hlth=Math.max(.15,1-dmg);
+    const cr=Math.floor(20+80*hlth),cg=Math.floor(60*hlth+20),cb=Math.floor(50+160*hlth);
+    ctx.beginPath();ctx.ellipse(mx,my,rx,ry,0,0,Math.PI*2);ctx.fillStyle=`rgba(${cr},${cg},${cb},.22)`;ctx.fill();ctx.strokeStyle=`rgba(${cr},${cg},${cb},.72)`;ctx.lineWidth=3;ctx.stroke();
+    const irx=rx*.68,iry=ry*.62;
+    ctx.beginPath();ctx.ellipse(mx,my,irx,iry,0,0,Math.PI*2);ctx.strokeStyle=`rgba(${cr},${cg+40},${cb},.55)`;ctx.lineWidth=2;ctx.setLineDash([8,4]);ctx.stroke();ctx.setLineDash([]);
+    holes.forEach(h2=>{ctx.beginPath();ctx.arc(h2.x,h2.y,h2.r,0,Math.PI*2);ctx.fillStyle='rgba(255,50,20,.55)';ctx.fill();});
+    ctx.fillStyle=`rgba(${cr},${cg},${cb},.88)`;ctx.font=`bold ${Math.max(14,w*.025)}px Noto Sans JP,sans-serif`;ctx.textAlign='center';ctx.fillText('ミトコンドリア',mx,my-8);
+    ctx.font=`${Math.max(12,w*.022)}px Noto Sans JP,sans-serif`;ctx.fillText(`ダメージ: ${Math.round(dmg*100)}%`,mx,my+18);
+    ros.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;if(p.x<8||p.x>w-8)p.vx*=-1;if(p.y<8||p.y>h-8)p.vy*=-1;
+      const dx2=(p.x-mx)/irx,dy2=(p.y-my)/iry;
+      if(Math.abs(dx2*dx2+dy2*dy2-1)<.15&&t%18===0&&holes.length<Math.floor(dmg*16))holes.push({x:p.x,y:p.y,r:p.r*.6});
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r*2,0,Math.PI*2);ctx.fillStyle='rgba(255,60,20,.18)';ctx.fill();
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle='rgba(255,60,20,.92)';ctx.fill();
+      ctx.fillStyle='rgba(255,200,80,1)';ctx.font=`bold ${Math.max(11,p.r*.9)}px sans-serif`;ctx.textAlign='center';ctx.fillText('ROS',p.x,p.y+3.5);
+    });
+    ctx.fillStyle='rgba(255,110,70,.88)';ctx.font=`bold ${Math.max(14,w*.024)}px Noto Sans JP,sans-serif`;ctx.textAlign='right';ctx.fillText('ROSが内膜を穿孔中→',w-12,22);
+    if(dmg>=.85){dmg=0;holes.length=0;}
+  },40);
+}
+let coqT=null;
+function startCoQ(){
+  clearInterval(coqT);const cv=iC('coqC');if(!cv)return;
+  const{ctx,w,h}=cv;let t=0,oxi=0;
+  const ros2=Array.from({length:12},()=>({x:Math.random()*w,y:Math.random()*h*.6+h*.2,vx:(Math.random()-.5)*3,vy:(Math.random()-.5)*2.5,r:Math.random()*7+10}));
+  const coqs=Array.from({length:12},(_,i)=>({x:w*.1+i*(w*.075),y:h*.48+Math.sin(i)*(h*.08),st:'ok',tmr:Math.random()*80+25}));
+  coqT=setInterval(()=>{
+    ctx.clearRect(0,0,w,h);t++;
+    ctx.beginPath();ctx.ellipse(w*.44,h*.5,w*.38,h*.42,0,0,Math.PI*2);ctx.fillStyle=`rgba(0,${Math.max(12,62-oxi)},${Math.max(22,140-oxi*1.8)},.22)`;ctx.fill();ctx.strokeStyle=`rgba(0,${Math.max(48,160-oxi)},255,.38)`;ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillStyle='rgba(0,180,255,.62)';ctx.font=`bold ${Math.max(13,w*.024)}px Noto Sans JP,sans-serif`;ctx.textAlign='center';ctx.fillText('ミトコンドリア内部',w*.44,h*.15);
+    ros2.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<8||p.x>w-8)p.vx*=-1;if(p.y<8||p.y>h-8)p.vy*=-1;ctx.beginPath();ctx.arc(p.x,p.y,p.r*1.8,0,Math.PI*2);ctx.fillStyle='rgba(255,50,20,.15)';ctx.fill();ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle='rgba(255,60,20,.9)';ctx.fill();ctx.fillStyle='rgba(255,200,80,.95)';ctx.font=`bold ${Math.max(10,p.r*.85)}px sans-serif`;ctx.textAlign='center';ctx.fillText('ROS',p.x,p.y+3);});
+    coqs.forEach(q=>{q.tmr--;if(q.tmr<=0&&q.st==='ok'){q.st='ox';oxi=Math.min(100,oxi+7);}const r=Math.max(16,w*.027);ctx.beginPath();ctx.arc(q.x,q.y,r,0,Math.PI*2);ctx.fillStyle=q.st==='ox'?'rgba(200,65,38,.88)':'rgba(0,200,168,.9)';ctx.fill();ctx.fillStyle='#fff';ctx.font=`bold ${Math.max(9,w*.015)}px sans-serif`;ctx.textAlign='center';ctx.fillText(q.st==='ox'?'酸化型':'CoQ10',q.x,q.y+3.5);});
+    ctx.fillStyle='rgba(255,105,65,.92)';ctx.font=`bold ${Math.max(14,w*.026)}px Noto Sans JP,sans-serif`;ctx.textAlign='right';ctx.fillText(`酸化型蓄積: ${Math.round(coqs.filter(q=>q.st==='ox').length/coqs.length*100)}%`,w-12,h*.15);
+    if(coqs.every(q=>q.st==='ox')){coqs.forEach((q,i)=>{q.st='ok';q.tmr=45+Math.random()*65;});oxi=0;}
+  },45);
+}
+let vitcT=null;
+function startVitC(){
+  clearInterval(vitcT);const cv=iC('vitcC');if(!cv)return;
+  const{ctx,w,h}=cv;let t=0,hlth=.25;
+  const ros3=Array.from({length:18},()=>({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.5)*2.5,vy:(Math.random()-.5)*2.2,r:Math.random()*7+10}));
+  const vcs=Array.from({length:10},(_,i)=>({x:w*.05+i*(w*.1),y:h*.95,vy:-(1.8+Math.random()*.8),a:1,r:Math.max(12,w*.018)}));
+  vitcT=setInterval(()=>{
+    ctx.clearRect(0,0,w,h);t++;if(t%22===0)hlth=Math.min(1,hlth+.05);
+    const mx=w*.45,my=h*.5,rx=w*.3,ry=h*.42,cr=Math.floor(18+80*hlth),cg=Math.floor(78+100*hlth),cb=Math.floor(75+140*hlth);
+    ctx.beginPath();ctx.ellipse(mx,my,rx,ry,0,0,Math.PI*2);ctx.fillStyle=`rgba(${cr},${cg},${cb},.26)`;ctx.fill();ctx.strokeStyle=`rgba(${cr},${cg},${cb},.75)`;ctx.lineWidth=3;ctx.stroke();
+    ctx.fillStyle=`rgba(${cr},${cg},${cb},.9)`;ctx.font=`bold ${Math.max(14,w*.026)}px Noto Sans JP,sans-serif`;ctx.textAlign='center';ctx.fillText('ミトコンドリア',mx,my-10);ctx.font=`${Math.max(13,w*.022)}px sans-serif`;ctx.fillText(hlth>.82?'✨ 元気！':'回復中…',mx,my+14);
+    ros3.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<6||p.x>w-6)p.vx*=-1;if(p.y<6||p.y>h-6)p.vy*=-1;ctx.beginPath();ctx.arc(p.x,p.y,p.r*1.8,0,Math.PI*2);ctx.fillStyle='rgba(255,50,20,.15)';ctx.fill();ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle='rgba(255,55,18,.88)';ctx.fill();ctx.fillStyle='rgba(255,200,80,.95)';ctx.font=`bold ${Math.max(10,p.r*.82)}px sans-serif`;ctx.textAlign='center';ctx.fillText('ROS',p.x,p.y+3.5);});
+    vcs.forEach((v,i)=>{v.y+=v.vy;v.a-=.006;if(v.y<10||v.a<=0){v.y=h*.95;v.a=1;v.x=w*.05+i*(w*.1);}ros3.forEach(p=>{if(Math.hypot(v.x-p.x,v.y-p.y)<v.r+p.r+6){for(let e=0;e<8;e++){const ea=Math.random()*Math.PI*2,ed=Math.random()*20+8;ctx.beginPath();ctx.arc(p.x+Math.cos(ea)*ed,p.y+Math.sin(ea)*ed,3,0,Math.PI*2);ctx.fillStyle='rgba(0,220,180,.6)';ctx.fill();}p.x=Math.random()*w;p.y=Math.random()*h;}});ctx.beginPath();ctx.arc(v.x,v.y,v.r*1.8,0,Math.PI*2);ctx.fillStyle=`rgba(0,200,180,${v.a*.25})`;ctx.fill();ctx.beginPath();ctx.arc(v.x,v.y,v.r,0,Math.PI*2);ctx.fillStyle=`rgba(0,200,180,${v.a})`;ctx.fill();ctx.fillStyle=`rgba(255,255,255,${v.a})`;ctx.font=`bold ${Math.max(11,v.r*.8)}px sans-serif`;ctx.textAlign='center';ctx.fillText('C',v.x,v.y+4);});
+    ctx.fillStyle='rgba(0,220,180,.88)';ctx.font=`bold ${Math.max(14,w*.026)}px Noto Sans JP,sans-serif`;ctx.textAlign='right';ctx.fillText('VitCがROSを中和→',w-12,22);
+    ctx.fillStyle='rgba(255,200,80,.82)';ctx.font=`${Math.max(12,w*.021)}px Noto Sans JP,sans-serif`;ctx.fillText(`健康度: ${Math.round(hlth*100)}%`,w-12,44);
+    if(hlth>=1)hlth=.22;
+  },40);
+}
+let coqrT=null;
+function startCoQR(){
+  clearInterval(coqrT);const cv=iC('coqrC');if(!cv)return;
+  const{ctx,w,h}=cv;let t=0;
+  const qs=Array.from({length:12},(_,i)=>({x:w*.08+i*(w*.078),y:h*.5+Math.sin(i*.8)*(h*.07),st:'ox'}));
+  const vs=Array.from({length:6},(_,i)=>({x:w*.98,y:h*.12+i*(h*.14),tgt:null,r:Math.max(14,w*.022)}));
+  coqrT=setInterval(()=>{
+    ctx.clearRect(0,0,w,h);t++;
+    ctx.beginPath();ctx.ellipse(w*.46,h*.5,w*.4,h*.44,0,0,Math.PI*2);ctx.fillStyle='rgba(0,32,74,.22)';ctx.fill();ctx.strokeStyle='rgba(0,180,255,.32)';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillStyle='rgba(0,180,255,.62)';ctx.font=`bold ${Math.max(13,w*.024)}px Noto Sans JP,sans-serif`;ctx.textAlign='center';ctx.fillText('ミトコンドリア内部',w*.46,h*.14);
+    vs.forEach((v,i)=>{const oxs=qs.filter(q=>q.st==='ox');if(!v.tgt&&oxs.length>0)v.tgt=oxs[Math.floor(Math.random()*oxs.length)];if(v.tgt){const dx=v.tgt.x-v.x,dy=v.tgt.y-v.y,d=Math.hypot(dx,dy);if(d>6){v.x+=dx/d*5;v.y+=dy/d*5;}else{for(let e=0;e<12;e++){const ea=Math.random()*Math.PI*2,ed=Math.random()*28+10;ctx.beginPath();ctx.arc(v.tgt.x+Math.cos(ea)*ed,v.tgt.y+Math.sin(ea)*ed,3.5,0,Math.PI*2);ctx.fillStyle='rgba(0,220,180,.6)';ctx.fill();}v.tgt.st='ok';v.tgt=null;v.x=w*.98;v.y=h*.12+i*(h*.14);}}else v.x-=3;if(v.x<0)v.x=w*.98;ctx.beginPath();ctx.arc(v.x,v.y,v.r*1.8,0,Math.PI*2);ctx.fillStyle='rgba(0,200,255,.18)';ctx.fill();ctx.beginPath();ctx.arc(v.x,v.y,v.r,0,Math.PI*2);ctx.fillStyle='rgba(0,200,255,.9)';ctx.fill();ctx.fillStyle='#fff';ctx.font=`bold ${Math.max(10,v.r*.75)}px sans-serif`;ctx.textAlign='center';ctx.fillText('C',v.x,v.y+3.5);});
+    qs.forEach(q=>{const r=Math.max(17,w*.028);ctx.beginPath();ctx.arc(q.x,q.y,r,0,Math.PI*2);ctx.fillStyle=q.st==='ok'?'rgba(0,205,165,.92)':'rgba(195,62,38,.82)';ctx.fill();ctx.fillStyle='#fff';ctx.font=`bold ${Math.max(9,w*.015)}px sans-serif`;ctx.textAlign='center';ctx.fillText(q.st==='ok'?'CoQ10✅':'酸化型',q.x,q.y+3.5);if(q.st==='ok'){ctx.beginPath();ctx.arc(q.x,q.y,r+7,0,Math.PI*2);ctx.strokeStyle='rgba(0,205,165,.32)';ctx.lineWidth=2;ctx.stroke();}});
+    ctx.fillStyle='rgba(0,220,180,.95)';ctx.font=`bold ${Math.max(14,w*.026)}px Noto Sans JP,sans-serif`;ctx.textAlign='right';ctx.fillText(`CoQ10稼働率: ${Math.round(qs.filter(q=>q.st==='ok').length/qs.length*100)}%`,w-12,22);
+    if(qs.every(q=>q.st==='ok'))setTimeout(()=>qs.forEach(q=>q.st='ox'),600);
+  },45);
+}
+document.getElementById('prog').style.width=(1/T*100)+'%';
+</script>
+</body>
+</html>
